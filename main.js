@@ -10,10 +10,12 @@ const progress = $("#progress");
 const nextButton = $(".btn-next");
 const prevButton = $(".btn-prev");
 const randomButton = $(".btn-random");
+const repeatButton = $(".btn-repeat");
 const apps = {
   currentIndex: 0,
   isPlaying: false,
-  isRandom: false,
+  isRepeat: false,
+  isPlayedArray: [],
   songs: [
     {
       name: "YÊU MỘT NGƯỜI CÓ LẼ",
@@ -58,6 +60,11 @@ const apps = {
       image: "./img/lac.jpg",
     },
   ],
+  initIsPlayedArray: function () {
+    this.isPlayedArray.length = this.songs.length;
+    for (var i = 0; i < this.isPlayedArray.length; i++)
+      this.isPlayedArray[i] = false;
+  },
   defineProperties: function () {
     Object.defineProperty(this, "currentSong", {
       get: function () {
@@ -66,8 +73,10 @@ const apps = {
     });
   },
   render: function () {
-    const htmls = this.songs.map((song) => {
-      return `   <div class="song">
+    const htmls = this.songs.map((song, index) => {
+      return `   <div class="song ${
+        index === this.currentIndex ? "active" : ""
+      }">
           <div
             class="thumb"
             style="
@@ -133,18 +142,32 @@ const apps = {
     prevButton.addEventListener("click", () => {
       if (_this.isRandom) _this.playRandomSong();
       else _this.prevSong();
+      _this.isPlayedArray[this.currentIndex] = true;
       audio.play();
+      _this.render();
     });
     //Next
     nextButton.addEventListener("click", () => {
       if (_this.isRandom) _this.playRandomSong();
       else _this.nextSong();
+      _this.isPlayedArray[this.currentIndex] = true;
       audio.play();
+      _this.render();
     });
     //Random
     randomButton.addEventListener("click", () => {
       _this.isRandom = !_this.isRandom;
       randomButton.classList.toggle("active", _this.isRandom);
+    });
+    //Repeat
+    repeatButton.addEventListener("click", () => {
+      _this.isRepeat = !_this.isRepeat;
+      repeatButton.classList.toggle("active", _this.isRepeat);
+    });
+    //Ended
+    audio.addEventListener("ended", () => {
+      if (_this.isRepeat) audio.play();
+      else nextButton.click();
     });
   },
   loadCurrentSong: function () {
@@ -166,10 +189,18 @@ const apps = {
     const prevIndex = this.currentIndex;
     do {
       this.currentIndex = Math.floor(Math.random() * this.songs.length);
-    } while (prevIndex === this.currentIndex);
+      if (this.isPlayedArray.every((e) => e === true)) {
+        this.initIsPlayedArray();
+        break;
+      }
+    } while (
+      prevIndex === this.currentIndex ||
+      this.isPlayedArray[this.currentIndex]
+    );
     this.loadCurrentSong();
   },
   start: function () {
+    this.initIsPlayedArray();
     this.defineProperties();
     this.handleEvent();
     this.loadCurrentSong();
