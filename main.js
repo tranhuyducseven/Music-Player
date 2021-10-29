@@ -9,9 +9,11 @@ const playBtn = $(".btn-toggle-play");
 const progress = $("#progress");
 const nextButton = $(".btn-next");
 const prevButton = $(".btn-prev");
+const randomButton = $(".btn-random");
 const apps = {
   currentIndex: 0,
   isPlaying: false,
+  isRandom: false,
   songs: [
     {
       name: "YÊU MỘT NGƯỜI CÓ LẼ",
@@ -127,14 +129,22 @@ const apps = {
         audio.currentTime = seekTime;
       };
     });
-    //Next /prev
+    //Prev
     prevButton.addEventListener("click", () => {
-      _this.prevSong();
+      if (_this.isRandom) _this.playRandomSong();
+      else _this.prevSong();
       audio.play();
     });
+    //Next
     nextButton.addEventListener("click", () => {
-      _this.nextSong();
+      if (_this.isRandom) _this.playRandomSong();
+      else _this.nextSong();
       audio.play();
+    });
+    //Random
+    randomButton.addEventListener("click", () => {
+      _this.isRandom = !_this.isRandom;
+      randomButton.classList.toggle("active", _this.isRandom);
     });
   },
   loadCurrentSong: function () {
@@ -152,7 +162,13 @@ const apps = {
     if (this.currentIndex >= this.songs.length) this.currentIndex = 0;
     this.loadCurrentSong();
   },
-
+  playRandomSong: function () {
+    const prevIndex = this.currentIndex;
+    do {
+      this.currentIndex = Math.floor(Math.random() * this.songs.length);
+    } while (prevIndex === this.currentIndex);
+    this.loadCurrentSong();
+  },
   start: function () {
     this.defineProperties();
     this.handleEvent();
