@@ -11,6 +11,7 @@ const nextButton = $(".btn-next");
 const prevButton = $(".btn-prev");
 const randomButton = $(".btn-random");
 const repeatButton = $(".btn-repeat");
+const playlist = $(".playlist");
 const apps = {
   currentIndex: 0,
   isPlaying: false,
@@ -76,7 +77,7 @@ const apps = {
     const htmls = this.songs.map((song, index) => {
       return `   <div class="song ${
         index === this.currentIndex ? "active" : ""
-      }">
+      }" data-index=${index}>
           <div
             class="thumb"
             style="
@@ -92,7 +93,7 @@ const apps = {
           </div>
         </div>`;
     });
-    $(".playlist").innerHTML = htmls.join("");
+    playlist.innerHTML = htmls.join("");
   },
   handleEvent: function () {
     const _this = this;
@@ -168,6 +169,18 @@ const apps = {
     audio.addEventListener("ended", () => {
       if (_this.isRepeat) audio.play();
       else nextButton.click();
+    });
+    playlist.addEventListener("click", (e) => {
+      const songNode = e.target.closest(".song:not(.active)");
+      const optionSongNode = e.target.closest(".option");
+      if (songNode || optionSongNode) {
+        if (songNode) {
+          _this.currentIndex = Number(songNode.dataset.index);
+          _this.loadCurrentSong();
+          _this.render();
+          audio.play();
+        }
+      }
     });
   },
   loadCurrentSong: function () {
