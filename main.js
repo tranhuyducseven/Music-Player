@@ -7,6 +7,8 @@ const cdThumb = $(".cd-thumb");
 const audio = $("#audio");
 const playBtn = $(".btn-toggle-play");
 const progress = $("#progress");
+const nextButton = $(".btn-next");
+const prevButton = $(".btn-prev");
 const apps = {
   currentIndex: 0,
   isPlaying: false,
@@ -81,11 +83,6 @@ const apps = {
     });
     $(".playlist").innerHTML = htmls.join("");
   },
-  loadCurrentSong: function () {
-    heading.textContent = this.currentSong.name;
-    cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
-    audio.src = this.currentSong.path;
-  },
   handleEvent: function () {
     const _this = this;
     const cdWidth = cdThumb.offsetWidth;
@@ -130,6 +127,30 @@ const apps = {
         audio.currentTime = seekTime;
       };
     });
+    //Next /prev
+    prevButton.addEventListener("click", () => {
+      _this.prevSong();
+      audio.play();
+    });
+    nextButton.addEventListener("click", () => {
+      _this.nextSong();
+      audio.play();
+    });
+  },
+  loadCurrentSong: function () {
+    heading.textContent = this.currentSong.name;
+    cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
+    audio.src = this.currentSong.path;
+  },
+  prevSong: function () {
+    this.currentIndex--;
+    if (this.currentIndex < 0) this.currentIndex = this.songs.length - 1;
+    this.loadCurrentSong();
+  },
+  nextSong: function () {
+    this.currentIndex++;
+    if (this.currentIndex >= this.songs.length) this.currentIndex = 0;
+    this.loadCurrentSong();
   },
 
   start: function () {
