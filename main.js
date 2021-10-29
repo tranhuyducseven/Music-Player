@@ -1,15 +1,15 @@
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
 const player = $(".player");
-console.log(player);
 const cd = $(".cd");
 const heading = $("header h2");
 const cdThumb = $(".cd-thumb");
 const audio = $("#audio");
 const playBtn = $(".btn-toggle-play");
-
+const progress = $("#progress");
 const apps = {
-  currentIndex: 6,
+  currentIndex: 0,
+  isPlaying: false,
   songs: [
     {
       name: "YÊU MỘT NGƯỜI CÓ LẼ",
@@ -87,8 +87,17 @@ const apps = {
     audio.src = this.currentSong.path;
   },
   handleEvent: function () {
+    const _this = this;
+    const cdWidth = cdThumb.offsetWidth;
+
+    //CD spin
+    const cdAnimate = cdThumb.animate([{ transform: "rotate(360deg)" }], {
+      duration: 10000,
+      iterations: Infinity,
+    });
+    cdAnimate.pause();
     //scroll
-    const cdWidth = cd.offsetWidth;
+
     document.onscroll = function () {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       const newCdWidth = cdWidth - scrollTop;
@@ -98,8 +107,28 @@ const apps = {
     };
     //click play
     playBtn.addEventListener("click", () => {
-      audio.play();
-      player.classList.add("playing");
+      if (_this.isPlaying) audio.pause();
+      else audio.play();
+      audio.onplay = () => {
+        _this.isPlaying = true;
+        player.classList.add("playing");
+        cdAnimate.play();
+      };
+      audio.onpause = () => {
+        _this.isPlaying = false;
+        player.classList.remove("playing");
+        cdAnimate.pause();
+      };
+      audio.ontimeupdate = () => {
+        const progressPercentage = Math.floor(
+          (audio.currentTime / audio.duration) * 100
+        );
+        progress.value = progressPercentage;
+      };
+      progress.onchange = function (e) {
+        const seekTime = (e.target.value / 100) * audio.duration;
+        audio.currentTime = seekTime;
+      };
     });
   },
 
